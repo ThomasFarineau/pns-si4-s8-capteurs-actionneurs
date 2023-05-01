@@ -1,5 +1,9 @@
 # Projet Capteur Actionneur
 
+- Thomas FARINEAU
+- Léo KITABDJIAN
+
+
 ## Table des matières
 [Description](#description)
 
