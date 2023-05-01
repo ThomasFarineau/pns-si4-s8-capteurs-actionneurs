@@ -14,6 +14,15 @@
 
 [Résultats](#résultats)
 
+[Utilisation de la carte](#utilisation-de-la-carte)
+
+- [Consommation d’énergie](#consommation-dénergie)
+- [Mémoire](#mémoire)
+- [Latence](#latence)
+
+[Conclusion](#conclusion)
+
+
 
 ## Description
 ### Contexte
@@ -56,7 +65,7 @@ Après avoir testé notre modèle sur notre ordinateur, nous l'avons transféré
 
 ## Modèle de réseau de neurones convolutif
 
-Le réseau 1D-CNN est adapté pour traiter les signaux audio des bruits d'oiseaux grâce à ses couches convolutives qui extraient des caractéristiques hiérarchiques et locales. La réduction de dimensionnalité préserve les informations importantes tout en accélérant l’analyse et le modèle est facilement modifiable pour s'adapter à diverses situations. La fonction d’activation ReLU évite le problème de disparition du gradient et accélère la convergence, tandis que la couche dense et l'activation softmax permettent une classification en plusieurs catégories pour identifier différentes espèces d’oiseaux. Enfin, l’optimiseur Adam assure une convergence rapide et des performances élevées en ajustant les taux d’apprentissage, faisant de ce 1D-CNN un choix intéressant pour détecter les bruits d’oiseaux en raison de sa capacité à traiter, extraire et classifier les signaux audio.
+Le réseau 1D-CNN est adapté pour traiter les signaux audio des bruits d’oiseaux grâce à ses couches convolutives qui extraient des caractéristiques hiérarchiques et locales. La réduction de dimensionnalité préserve les informations importantes tout en accélérant l’analyse et le modèle est facilement modifiable pour s’adapter dans diverses situations. La fonction d’activation ReLU évite le problème de disparition du gradient et accélère la convergence, tandis que la couche dense et l’activation softmax permettent une classification en plusieurs catégories pour identifier différentes espèces d’oiseaux. Enfin, l’optimiseur Adam assure une convergence rapide et des performances élevées en ajustant les taux d’apprentissage, faisant de ce 1D-CNN un choix intéressant pour détecter les bruits d’oiseaux en raison de sa capacité à traiter, extraire et classifier les signaux audio.
 
 L’objectif était de mettre en œuvre une version considérablement simplifiée du M5 présenté dans le TD5, qui est très performant, mais trop gourmand en ressources pour être utilisé sur un appareil compact comme la carte que nous utilisons.
 
@@ -68,9 +77,7 @@ Non-trainable params: 0
 
 ## Résultats
 
-
 ```python
-
 Epoch 1/5
 36/36 [==============================] - 4s 68ms/step - loss: 0.9472 - categorical_accuracy: 0.5590 - val_loss: 0.8877 - val_categorical_accuracy: 0.5230
 Epoch 2/5
@@ -87,5 +94,75 @@ Epoch 5/5
 tf.Tensor([[3912   0   340][139    0   23][3310   0   801]], shape=(3, 3), dtype=int32)
 ```
 
-Testing accuracy: 0.552258
+Lors de l’évaluation des données de test, nous avons obtenu une précision d’environ **55,8 %**. Ce résultat est conforme à nos attentes, car nous avons utilisé une version simplifiée du modèle M5, qui est très performant. Cependant, nous avons dû le simplifier pour l’adapter à la carte que nous utilisons. Ainsi, nous convenons que le modèle est performant tant que la précision est supérieure à **50 %**.
 
+
+Lors de l’évaluation sur l’ensemble de test, nous avons atteint une précision de **55,2 %**. D’après la matrice de confusion, il est apparent que le modèle est moins performant pour la deuxième classe.
+
+```python
+[3912   0   340]
+[139    0   23]
+[3310   0   801]
+```
+
+Lors de l’évaluation effectuée sur la carte, nous avons obtenu une précision de **55 %**, ce qui est comparable à celle obtenue sur l’ordinateur.
+
+`Testing accuracy: 0.552258`
+
+Il est évident que les cris d’oiseaux sont généralement reconnus malgré quelques erreurs lors du lancement ou de l’arrêt de l’audio sur notre téléphone. Pour confirmer les résultats, il serait préférable de faire écouter de véritables oiseaux à notre carte. De plus, il serait bénéfique d’isoler les bruits autres que les cris d’oiseaux pour éviter de fausser les résultats.
+
+## Utilisation de la carte
+
+### Consommation d’énergie
+
+En utilisant constante, la carte consomme maximum **0,0137 Wh**.
+
+- La carte consomme **0,0002 Wh** à chaque récupération des données toutes les 2,5 secondes, donc **0,0048 Wh** en une heure.
+
+La consommation de la carte est donc de **0,0185 Wh**.
+
+#### Caractéristiques de la batterie
+
+Pour alimenter la carte pendant toute une journée
+
+- Il faut une batterie de **0,444 Wh**.
+  - Q = P * t = 0,0185 * 24 = **0,444 Wh**
+
+- Soit une batterie de **124 mAh** (à 3.6 V).
+  - Q = 1000 * E / V = 1000 * 0,444 / 3,6 = **124 mAh**
+
+### Mémoire
+
+![Stockage dans la RAM](detail.png)
+
+La taille dans la RAM est de **43 104 octets**.
+
+- 42936 + 168 = 43 104
+
+![Stockage dans le ROM](stockage.png)
+
+La taille dans la ROM est de **45 152 octets**.
+
+### Latence
+
+![Latence moyenne](latency.png)
+
+La latence moyenne est de **74 ms**.
+
+### Précision
+
+Sur une centaine de tests, plus de 50 % des tests sont corrects.
+
+## Conclusion
+
+Ce projet nous a permis d’élaborer une méthode de reconnaissance des cris d’oiseaux en utilisant un modèle de réseau de neurones convolutifs. Ce modèle peut être déployé sur des dispositifs à ressources limitées, tels que la carte Nucleo-64 STM32L476, offrant ainsi de nombreuses possibilités d’applications dans les domaines de l’ornithologie et de la préservation des espèces animales.
+
+### Améliorations possibles
+
+Pour améliorer le projet, il est possible de :
+
+- Effectuer un prétraitement des fichiers audio pour supprimer les bruits de fond et les silences.
+- Enrichir la base de données d’apprentissage avec des enregistrements de diverses qualités.
+- Explorer d’autres architectures de réseaux de neurones.
+- Optimiser les hyperparamètres du modèle.
+- Implémenter des techniques de data augmentation pour renforcer la robustesse du modèle.
